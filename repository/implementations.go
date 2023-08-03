@@ -39,13 +39,15 @@ func (r *Repository) InsertUser(ctx context.Context, input InsertUserInput) (out
 }
 
 func (r *Repository) IsPhonePasswordUserExist(ctx context.Context, input IsPhonePasswordUserExistInput) (output IsPhonePasswordUserExistOutput, err error) {
-	query := "SELECT * FROM users WHERE phone = $1 AND password = $2"
-	err = r.Db.QueryRowContext(ctx, query, input.Phone, input.Password).Scan(&output.FullName, &output.Phone)
+	query := "SELECT id, fullname, phone FROM users WHERE phone = $1 AND password = $2"
+	err = r.Db.QueryRowContext(ctx, query, input.Phone, input.Password).Scan(&output.Id, &output.FullName, &output.Phone)
 	if err != nil {
+		output.IsExist = false
 		if err == sql.ErrNoRows {
 			return output, fmt.Errorf("no profile found for phone number: %s", input.Phone)
 		}
 		return output, err
 	}
+	output.IsExist = true
 	return output, nil
 }

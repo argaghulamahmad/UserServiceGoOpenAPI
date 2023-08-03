@@ -23,9 +23,9 @@ func (s *Server) LoginUser(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Phone number and password are required")
 	}
 
-	_, err := s.Repository.IsPhonePasswordUserExist(context.Background(), repository.IsPhonePasswordUserExistInput{
+	output, err := s.Repository.IsPhonePasswordUserExist(context.Background(), repository.IsPhonePasswordUserExistInput{
 		Phone:    params.Phone,
-		Password: params.Phone,
+		Password: params.Password,
 	})
 
 	if err != nil {
@@ -38,7 +38,7 @@ func (s *Server) LoginUser(ctx echo.Context) error {
 	}
 
 	return ctx.JSON(http.StatusOK, map[string]interface{}{
-		"userId": "userId",
+		"userId": output.Id,
 		"token":  token,
 	})
 }

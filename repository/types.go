@@ -37,6 +37,7 @@ type IsPhonePasswordUserExistInput struct {
 }
 
 type IsPhonePasswordUserExistOutput struct {
+	Id       int
 	FullName string
 	Phone    string
 	IsExist  bool `json:"isExist"`
