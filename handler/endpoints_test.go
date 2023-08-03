@@ -40,7 +40,7 @@ func TestLoginUser(t *testing.T) {
 	}
 }
 
-func TestGetProfile(t *testing.T) {
+func TestGetUser(t *testing.T) {
 	e := echo.New()
 
 	req := httptest.NewRequest(http.MethodGet, "/profile", nil)
@@ -51,16 +51,16 @@ func TestGetProfile(t *testing.T) {
 
 	server := &Server{}
 
-	err := server.GetProfile(ctx)
+	err := server.GetUser(ctx)
 	if assert.NoError(t, err) {
 		assert.Equal(t, http.StatusOK, rec.Code)
 	}
 }
 
-func TestUpdateProfile(t *testing.T) {
+func TestUpdateUser(t *testing.T) {
 	e := echo.New()
 
-	updateData := generated.UpdateProfileRequest{
+	updateData := generated.UpdateUserRequest{
 		FullName: nil,
 		Phone:    nil,
 	}
@@ -73,7 +73,7 @@ func TestUpdateProfile(t *testing.T) {
 
 	server := &Server{}
 
-	err := server.UpdateProfile(ctx)
+	err := server.UpdateUser(ctx)
 	if assert.NoError(t, err) {
 		assert.Equal(t, http.StatusOK, rec.Code)
 	}

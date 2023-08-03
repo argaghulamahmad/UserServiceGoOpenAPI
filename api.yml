@@ -56,7 +56,7 @@ paths:
   /profile:
     get:
       summary: Get user profile.
-      operationId: getProfile
+      operationId: GetUser
       security:
         - bearerAuth: []
       responses:
@@ -70,7 +70,7 @@ paths:
           description: Forbidden
     patch:
       summary: Update user profile.
-      operationId: updateProfile
+      operationId: UpdateUser
       security:
         - bearerAuth: []
       requestBody:
@@ -78,7 +78,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateProfileRequest'
+              $ref: '#/components/schemas/UpdateUserRequest'
       responses:
         '200':
           description: Successful update of user profile
@@ -149,7 +149,7 @@ components:
           minLength: 10
           maxLength: 13
           pattern: ^\+62\d+$
-    UpdateProfileRequest:
+    UpdateUserRequest:
       type: object
       properties:
         phone:

@@ -1,32 +1,43 @@
 // This file contains types that are used in the repository layer.
 package repository
 
-type GetProfileInput struct {
+type GetUserInput struct {
 	Phone string
 }
 
-type GetProfileOutput struct {
+type GetUserOutput struct {
 	FullName string `json:"fullName"`
 	Phone    string `json:"phone"`
 }
 
-type UpdateProfileInput struct {
+type UpdateUserInput struct {
 	FullName string
 	Phone    string
 }
 
-type UpdateProfileOutput struct {
+type UpdateUserOutput struct {
 	FullName string `json:"fullName"`
 	Phone    string `json:"phone"`
 }
 
-type InsertProfileInput struct {
+type InsertUserInput struct {
 	FullName string
 	Phone    string
 	Password string
 }
 
-type InsertProfileOutput struct {
+type InsertUserOutput struct {
 	FullName string `json:"fullName"`
 	Phone    string `json:"phone"`
+}
+
+type CheckUsernamePasswordProfileInput struct {
+	Phone    string
+	Password string
+}
+
+type CheckUsernamePasswordProfileOutput struct {
+	FullName string
+	Phone    string
+	IsExist  bool `json:"isExist"`
 }

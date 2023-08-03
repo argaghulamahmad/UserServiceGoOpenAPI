@@ -34,47 +34,62 @@ func (m *MockRepositoryInterface) EXPECT() *MockRepositoryInterfaceMockRecorder 
 	return m.recorder
 }
 
-// GetProfile mocks base method.
-func (m *MockRepositoryInterface) GetProfile(ctx context.Context, input GetProfileInput) (GetProfileOutput, error) {
+// GetUser mocks base method.
+func (m *MockRepositoryInterface) GetUser(ctx context.Context, input GetUserInput) (GetUserOutput, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetProfile", ctx, input)
-	ret0, _ := ret[0].(GetProfileOutput)
+	ret := m.ctrl.Call(m, "GetUser", ctx, input)
+	ret0, _ := ret[0].(GetUserOutput)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetProfile indicates an expected call of GetProfile.
-func (mr *MockRepositoryInterfaceMockRecorder) GetProfile(ctx, input interface{}) *gomock.Call {
+// GetUser indicates an expected call of GetUser.
+func (mr *MockRepositoryInterfaceMockRecorder) GetUser(ctx, input interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProfile", reflect.TypeOf((*MockRepositoryInterface)(nil).GetProfile), ctx, input)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUser", reflect.TypeOf((*MockRepositoryInterface)(nil).GetUser), ctx, input)
 }
 
-// InsertProfile mocks base method.
-func (m *MockRepositoryInterface) InsertProfile(ctx context.Context, input InsertProfileInput) (InsertProfileOutput, error) {
+// InsertUser mocks base method.
+func (m *MockRepositoryInterface) InsertUser(ctx context.Context, input InsertUserInput) (InsertUserOutput, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "InsertProfile", ctx, input)
-	ret0, _ := ret[0].(InsertProfileOutput)
+	ret := m.ctrl.Call(m, "InsertUser", ctx, input)
+	ret0, _ := ret[0].(InsertUserOutput)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// InsertProfile indicates an expected call of InsertProfile.
-func (mr *MockRepositoryInterfaceMockRecorder) InsertProfile(ctx, input interface{}) *gomock.Call {
+// InsertUser indicates an expected call of InsertUser.
+func (mr *MockRepositoryInterfaceMockRecorder) InsertUser(ctx, input interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertProfile", reflect.TypeOf((*MockRepositoryInterface)(nil).InsertProfile), ctx, input)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertUser", reflect.TypeOf((*MockRepositoryInterface)(nil).InsertUser), ctx, input)
 }
 
-// Updateprofile mocks base method.
-func (m *MockRepositoryInterface) Updateprofile(ctx context.Context, input UpdateProfileInput) (UpdateProfileOutput, error) {
+// IsPhonePasswordUserExist mocks base method.
+func (m *MockRepositoryInterface) IsPhonePasswordUserExist(ctx context.Context, input CheckUsernamePasswordProfileInput) (CheckUsernamePasswordProfileOutput, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Updateprofile", ctx, input)
-	ret0, _ := ret[0].(UpdateProfileOutput)
+	ret := m.ctrl.Call(m, "IsPhonePasswordUserExist", ctx, input)
+	ret0, _ := ret[0].(CheckUsernamePasswordProfileOutput)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Updateprofile indicates an expected call of Updateprofile.
-func (mr *MockRepositoryInterfaceMockRecorder) Updateprofile(ctx, input interface{}) *gomock.Call {
+// IsPhonePasswordUserExist indicates an expected call of IsPhonePasswordUserExist.
+func (mr *MockRepositoryInterfaceMockRecorder) IsPhonePasswordUserExist(ctx, input interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Updateprofile", reflect.TypeOf((*MockRepositoryInterface)(nil).Updateprofile), ctx, input)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsPhonePasswordUserExist", reflect.TypeOf((*MockRepositoryInterface)(nil).IsPhonePasswordUserExist), ctx, input)
+}
+
+// UpdateUser mocks base method.
+func (m *MockRepositoryInterface) UpdateUser(ctx context.Context, input UpdateUserInput) (UpdateUserOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUser", ctx, input)
+	ret0, _ := ret[0].(UpdateUserOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateUser indicates an expected call of UpdateUser.
+func (mr *MockRepositoryInterfaceMockRecorder) UpdateUser(ctx, input interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUser", reflect.TypeOf((*MockRepositoryInterface)(nil).UpdateUser), ctx, input)
 }

@@ -46,14 +46,14 @@ func generateJWTToken(phoneNumber string) (string, error) {
 	return tokenString, nil
 }
 
-func (s *Server) GetProfile(ctx echo.Context) error {
+func (s *Server) GetUser(ctx echo.Context) error {
 	_ = ctx.Get("user_id").(int)
 
 	return ctx.JSON(http.StatusOK, nil)
 }
 
-func (s *Server) UpdateProfile(ctx echo.Context) error {
-	var params = generated.UpdateProfileRequest{
+func (s *Server) UpdateUser(ctx echo.Context) error {
+	var params = generated.UpdateUserRequest{
 		FullName: nil,
 		Phone:    nil,
 	}

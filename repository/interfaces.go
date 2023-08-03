@@ -7,7 +7,8 @@ package repository
 import "context"
 
 type RepositoryInterface interface {
-	GetProfile(ctx context.Context, input GetProfileInput) (output GetProfileOutput, err error)
-	UpdateProfile(ctx context.Context, input UpdateProfileInput) (output UpdateProfileOutput, err error)
-	InsertProfile(ctx context.Context, input InsertProfileInput) (output InsertProfileOutput, err error)
+	IsPhonePasswordUserExist(ctx context.Context, input CheckUsernamePasswordProfileInput) (output CheckUsernamePasswordProfileOutput, err error)
+	GetUser(ctx context.Context, input GetUserInput) (output GetUserOutput, err error)
+	UpdateUser(ctx context.Context, input UpdateUserInput) (output UpdateUserOutput, err error)
+	InsertUser(ctx context.Context, input InsertUserInput) (output InsertUserOutput, err error)
 }
