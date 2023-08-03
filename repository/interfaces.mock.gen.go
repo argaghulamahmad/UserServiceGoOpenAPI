@@ -35,10 +35,10 @@ func (m *MockRepositoryInterface) EXPECT() *MockRepositoryInterfaceMockRecorder 
 }
 
 // GetProfile mocks base method.
-func (m *MockRepositoryInterface) GetProfile(ctx context.Context, input GetProfileByPhoneNumberInput) (GetProfileByPhoneNumberOutput, error) {
+func (m *MockRepositoryInterface) GetProfile(ctx context.Context, input GetProfileInput) (GetProfileOutput, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetProfile", ctx, input)
-	ret0, _ := ret[0].(GetProfileByPhoneNumberOutput)
+	ret0, _ := ret[0].(GetProfileOutput)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -47,4 +47,34 @@ func (m *MockRepositoryInterface) GetProfile(ctx context.Context, input GetProfi
 func (mr *MockRepositoryInterfaceMockRecorder) GetProfile(ctx, input interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProfile", reflect.TypeOf((*MockRepositoryInterface)(nil).GetProfile), ctx, input)
+}
+
+// InsertProfile mocks base method.
+func (m *MockRepositoryInterface) InsertProfile(ctx context.Context, input InsertProfileInput) (InsertProfileOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InsertProfile", ctx, input)
+	ret0, _ := ret[0].(InsertProfileOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// InsertProfile indicates an expected call of InsertProfile.
+func (mr *MockRepositoryInterfaceMockRecorder) InsertProfile(ctx, input interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertProfile", reflect.TypeOf((*MockRepositoryInterface)(nil).InsertProfile), ctx, input)
+}
+
+// Updateprofile mocks base method.
+func (m *MockRepositoryInterface) Updateprofile(ctx context.Context, input UpdateProfileInput) (UpdateProfileOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Updateprofile", ctx, input)
+	ret0, _ := ret[0].(UpdateProfileOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Updateprofile indicates an expected call of Updateprofile.
+func (mr *MockRepositoryInterfaceMockRecorder) Updateprofile(ctx, input interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Updateprofile", reflect.TypeOf((*MockRepositoryInterface)(nil).Updateprofile), ctx, input)
 }
