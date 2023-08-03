@@ -24,7 +24,8 @@ func (r *Repository) UpdateUser(ctx context.Context, input UpdateUserInput) (out
 	if err != nil {
 		return output, err
 	}
-
+	output.FullName = input.FullName
+	output.Phone = input.Phone
 	return output, nil
 }
 

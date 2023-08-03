@@ -107,15 +107,23 @@ func (s *Server) GetUser(ctx echo.Context) error {
 }
 
 func (s *Server) UpdateUser(ctx echo.Context) error {
-	var params = generated.UpdateUserRequest{
-		FullName: nil,
-		Phone:    nil,
-	}
+	var params = generated.UpdateUserRequest{}
 	if err := ctx.Bind(&params); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request data")
 	}
 
-	return ctx.JSON(http.StatusOK, nil)
+	output, err := s.Repository.UpdateUser(context.Background(), repository.UpdateUserInput{
+		FullName: *params.FullName,
+		Phone:    *params.Phone,
+	})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to update user")
+	}
+
+	return ctx.JSON(http.StatusOK, generated.ProfileResponse{
+		FullName: output.FullName,
+		Phone:    output.Phone,
+	})
 }
 
 func (s *Server) RegisterUser(ctx echo.Context) error {
