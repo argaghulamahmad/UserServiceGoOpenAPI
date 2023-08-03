@@ -2,8 +2,11 @@ package handler
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"github.com/SawitProRecruitment/UserService/generated"
+	"github.com/SawitProRecruitment/UserService/repository"
+	"github.com/golang/mock/gomock"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -13,6 +16,23 @@ import (
 
 func TestLoginUser(t *testing.T) {
 	e := echo.New()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := repository.NewMockRepositoryInterface(ctrl)
+
+	testInput := repository.IsPhonePasswordUserExistInput{
+		Phone:    "1234567890",
+		Password: "password123",
+	}
+
+	expectedOutput := repository.IsPhonePasswordUserExistOutput{
+		FullName: "John Doe",
+		Phone:    testInput.Phone,
+	}
+
+	mockDB.EXPECT().IsPhonePasswordUserExist(context.Background(), testInput).Return(expectedOutput, nil)
 
 	loginData := generated.LoginRequest{
 		Phone:    "testuser",
@@ -43,6 +63,18 @@ func TestLoginUser(t *testing.T) {
 func TestGetUser(t *testing.T) {
 	e := echo.New()
 
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockDB := repository.NewMockRepositoryInterface(ctrl)
+
+	testPhone := "1234567890"
+	expectedOutput := repository.GetUserOutput{
+		FullName: "John Doe",
+		Phone:    testPhone,
+	}
+
+	mockDB.EXPECT().GetUser(context.Background(), repository.GetUserInput{Phone: testPhone}).Return(expectedOutput, nil)
+
 	req := httptest.NewRequest(http.MethodGet, "/profile", nil)
 	rec := httptest.NewRecorder()
 	ctx := e.NewContext(req, rec)
@@ -59,6 +91,18 @@ func TestGetUser(t *testing.T) {
 
 func TestUpdateUser(t *testing.T) {
 	e := echo.New()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := repository.NewMockRepositoryInterface(ctrl)
+
+	testInput := repository.UpdateUserInput{
+		FullName: "Updated Name",
+		Phone:    "1234567890",
+	}
+
+	mockDB.EXPECT().UpdateUser(context.Background(), testInput).Return(repository.UpdateUserOutput{}, nil)
 
 	updateData := generated.UpdateUserRequest{
 		FullName: nil,
@@ -81,6 +125,19 @@ func TestUpdateUser(t *testing.T) {
 
 func TestRegisterUser(t *testing.T) {
 	e := echo.New()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := repository.NewMockRepositoryInterface(ctrl)
+
+	testInput := repository.InsertUserInput{
+		FullName: "Jane Smith",
+		Phone:    "9876543210",
+		Password: "password123",
+	}
+
+	mockDB.EXPECT().InsertUser(context.Background(), testInput).Return(repository.InsertUserOutput{}, nil)
 
 	registerData := generated.RegisterRequest{
 		FullName: "John Doe",
