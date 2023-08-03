@@ -105,3 +105,39 @@ func (s *Server) GetProfile(ctx echo.Context) error {
 func isValidJWTToken(token string) bool {
 	return true
 }
+
+type UpdateProfileParams struct {
+	PhoneNumber string `json:"phone_number"`
+	FullName    string `json:"full_name"`
+}
+
+func (s *Server) UpdateProfile(ctx echo.Context) error {
+	token := ctx.Request().Header.Get("Authorization")
+
+	if !isValidJWTToken(token) {
+		return echo.NewHTTPError(http.StatusForbidden, "Invalid or unauthorized JWT token")
+	}
+
+	var params UpdateProfileParams
+	if err := ctx.Bind(&params); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request data")
+	}
+
+	if params.PhoneNumber == "" && params.FullName == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "No fields to update")
+	}
+
+	if params.PhoneNumber != "" {
+		if isPhoneNumberTaken(params.PhoneNumber) {
+			return echo.NewHTTPError(http.StatusConflict, "Phone number already exists")
+		}
+	}
+
+	return ctx.JSON(http.StatusOK, map[string]string{
+		"message": "Profile updated successfully",
+	})
+}
+
+func isPhoneNumberTaken(phoneNumber string) bool {
+	return false
+}
