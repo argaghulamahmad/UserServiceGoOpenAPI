@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -11,12 +10,6 @@ import (
 )
 
 var JWTSecretKey = []byte("argaghulamahmad-secretkey")
-
-func (s *Server) Hello(ctx echo.Context, params generated.HelloParams) error {
-	var resp generated.HelloResponse
-	resp.Message = fmt.Sprintf("Hello User %d", params.Id)
-	return ctx.JSON(http.StatusOK, resp)
-}
 
 func (s *Server) LoginUser(ctx echo.Context) error {
 	var params generated.LoginRequest
