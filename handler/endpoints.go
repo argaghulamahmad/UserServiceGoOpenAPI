@@ -66,3 +66,22 @@ func isValidPassword(password string) bool {
 func hashAndSaltPassword(password string) string {
 	return password
 }
+
+type LoginParams struct {
+	PhoneNumber string `json:"phone_number"`
+	Password    string `json:"password"`
+}
+
+func (s *Server) Login(ctx echo.Context) error {
+	var params LoginParams
+	if err := ctx.Bind(&params); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request data")
+	}
+
+	userID := 123
+
+	return ctx.JSON(http.StatusOK, map[string]interface{}{
+		"userId": userID,
+		"token":  "sample-jwt-token",
+	})
+}
