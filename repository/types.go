@@ -11,7 +11,8 @@ type GetProfileOutput struct {
 }
 
 type UpdateProfileInput struct {
-	Phone string
+	FullName string
+	Phone    string
 }
 
 type UpdateProfileOutput struct {
