@@ -85,3 +85,23 @@ func (s *Server) Login(ctx echo.Context) error {
 		"token":  "sample-jwt-token",
 	})
 }
+
+func (s *Server) GetProfile(ctx echo.Context) error {
+	token := ctx.Request().Header.Get("Authorization")
+
+	if !isValidJWTToken(token) {
+		return echo.NewHTTPError(http.StatusForbidden, "Invalid or expired JWT token")
+	}
+
+	userName := "John Doe"
+	phoneNumber := "+628123456789"
+
+	return ctx.JSON(http.StatusOK, map[string]string{
+		"name":  userName,
+		"phone": phoneNumber,
+	})
+}
+
+func isValidJWTToken(token string) bool {
+	return true
+}
