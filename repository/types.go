@@ -31,12 +31,12 @@ type InsertUserOutput struct {
 	Phone    string `json:"phone"`
 }
 
-type CheckUsernamePasswordProfileInput struct {
+type IsPhonePasswordUserExistInput struct {
 	Phone    string
 	Password string
 }
 
-type CheckUsernamePasswordProfileOutput struct {
+type IsPhonePasswordUserExistOutput struct {
 	FullName string
 	Phone    string
 	IsExist  bool `json:"isExist"`

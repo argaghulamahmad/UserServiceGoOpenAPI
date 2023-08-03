@@ -65,10 +65,10 @@ func (mr *MockRepositoryInterfaceMockRecorder) InsertUser(ctx, input interface{}
 }
 
 // IsPhonePasswordUserExist mocks base method.
-func (m *MockRepositoryInterface) IsPhonePasswordUserExist(ctx context.Context, input CheckUsernamePasswordProfileInput) (CheckUsernamePasswordProfileOutput, error) {
+func (m *MockRepositoryInterface) IsPhonePasswordUserExist(ctx context.Context, input IsPhonePasswordUserExistInput) (IsPhonePasswordUserExistOutput, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "IsPhonePasswordUserExist", ctx, input)
-	ret0, _ := ret[0].(CheckUsernamePasswordProfileOutput)
+	ret0, _ := ret[0].(IsPhonePasswordUserExistOutput)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"context"
+	"github.com/SawitProRecruitment/UserService/repository"
 	"net/http"
 	"time"
 
@@ -19,6 +21,15 @@ func (s *Server) LoginUser(ctx echo.Context) error {
 
 	if params.Phone == "" || params.Password == "" {
 		return echo.NewHTTPError(http.StatusBadRequest, "Phone number and password are required")
+	}
+
+	_, err := s.Repository.IsPhonePasswordUserExist(context.Background(), repository.IsPhonePasswordUserExistInput{
+		Phone:    params.Phone,
+		Password: params.Phone,
+	})
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to check user")
 	}
 
 	token, err := generateJWTToken(params.Phone)
