@@ -1,17 +1,37 @@
-/**
-  This is the SQL script that will be used to initialize the database schema.
-  We will evaluate you based on how well you design your database.
-  1. How you design the tables.
-  2. How you choose the data types and keys.
-  3. How you name the fields.
-  In this assignment we will use PostgreSQL as the database.
-  */
-
-/** This is test table. Remove this table and replace with your own tables. */
-CREATE TABLE test (
-	id serial PRIMARY KEY,
-	name VARCHAR ( 50 ) UNIQUE NOT NULL,
+CREATE TABLE Users
+(
+    id SERIAL PRIMARY KEY,
+    phone           VARCHAR(13) UNIQUE NOT NULL,
+    fullName        VARCHAR(60),
+    password        VARCHAR(64)
 );
 
-INSERT INTO test (name) VALUES ('test1');
-INSERT INTO test (name) VALUES ('test2');
+INSERT INTO Users (phone, fullName, password)
+VALUES ('+621234567890', 'John Doe', 'hashedpassword1');
+
+INSERT INTO Users (phone, fullName, password)
+VALUES ('+629876543210', 'Jane Smith', 'hashedpassword2');
+
+INSERT INTO Users (phone, fullName, password)
+VALUES ('+628765432109', 'Michael Johnson', 'hashedpassword3');
+
+INSERT INTO Users (phone, fullName, password)
+VALUES ('+621234567891', 'Emily Williams', 'hashedpassword4');
+
+INSERT INTO Users (phone, fullName, password)
+VALUES ('+628765432108', 'David Lee', 'hashedpassword5');
+
+INSERT INTO Users (phone, fullName, password)
+VALUES ('+628765432107', 'Sarah Brown', 'hashedpassword6');
+
+INSERT INTO Users (phone, fullName, password)
+VALUES ('+621234567892', 'Robert Martin', 'hashedpassword7');
+
+INSERT INTO Users (phone, fullName, password)
+VALUES ('+628765432106', 'Karen Johnson', 'hashedpassword8');
+
+INSERT INTO Users (phone, fullName, password)
+VALUES ('+628765432105', 'Daniel Wilson', 'hashedpassword9');
+
+INSERT INTO Users (phone, fullName, password)
+VALUES ('+628765432104', 'Michelle Anderson', 'hashedpassword10');

@@ -1,11 +1,19 @@
 package repository
 
-import "context"
+import (
+	"context"
+	"database/sql"
+	"fmt"
+)
 
-func (r *Repository) GetTestById(ctx context.Context, input GetTestByIdInput) (output GetTestByIdOutput, err error) {
-	err = r.Db.QueryRowContext(ctx, "SELECT name FROM test WHERE id = $1", input.Id).Scan(&output.Name)
+func (r *Repository) GetProfile(ctx context.Context, input GetProfileByPhoneNumberInput) (output GetProfileByPhoneNumberOutput, err error) {
+	query := "SELECT * FROM users WHERE phone = $1"
+	err = r.Db.QueryRowContext(ctx, query, input.PhoneNumber).Scan(&output.FullName, &output.Phone)
 	if err != nil {
-		return
+		if err == sql.ErrNoRows {
+			return output, fmt.Errorf("no profile found for phone number: %s", input.PhoneNumber)
+		}
+		return output, err
 	}
-	return
+	return output, nil
 }
