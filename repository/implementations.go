@@ -7,7 +7,7 @@ import (
 )
 
 func (r *Repository) GetUser(ctx context.Context, input GetUserInput) (output GetUserOutput, err error) {
-	query := "SELECT *, phone FROM users WHERE phone = $1"
+	query := "SELECT fullname, phone FROM users WHERE phone = $1"
 	err = r.Db.QueryRowContext(ctx, query, input.Phone).Scan(&output.FullName, &output.Phone)
 	if err != nil {
 		if err == sql.ErrNoRows {

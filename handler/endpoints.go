@@ -2,8 +2,11 @@ package handler
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"github.com/SawitProRecruitment/UserService/repository"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/SawitProRecruitment/UserService/generated"
@@ -57,10 +60,50 @@ func generateJWTToken(phoneNumber string) (string, error) {
 	return tokenString, nil
 }
 
-func (s *Server) GetUser(ctx echo.Context) error {
-	_ = ctx.Get("user_id").(int)
+func getPhoneNumberFromJWTToken(tokenString string) (string, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+		return JWTSecretKey, nil
+	})
 
-	return ctx.JSON(http.StatusOK, nil)
+	if err != nil {
+		return "", err
+	}
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		if phoneNumber, ok := claims["sub"].(string); ok {
+			return phoneNumber, nil
+		}
+		return "", errors.New("Phone number not found in token claims")
+	}
+
+	return "", errors.New("Invalid token")
+}
+
+func (s *Server) GetUser(ctx echo.Context) error {
+	authorizationValue := ctx.Request().Header.Get("Authorization")
+	authorizationValue = strings.Replace(authorizationValue, "Bearer ", "", 1)
+
+	phoneNumber, err := getPhoneNumberFromJWTToken(authorizationValue)
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid authorization token")
+	}
+
+	output, err := s.Repository.GetUser(context.Background(), repository.GetUserInput{
+		Phone: phoneNumber,
+	})
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to get user")
+	}
+
+	return ctx.JSON(http.StatusOK, generated.ProfileResponse{
+		FullName: output.FullName,
+		Phone:    phoneNumber,
+	})
 }
 
 func (s *Server) UpdateUser(ctx echo.Context) error {
