@@ -21,9 +21,14 @@ func (s *Server) LoginUser(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Phone number and password are required")
 	}
 
+	token, err := generateJWTToken(params.Phone)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to generate token")
+	}
+
 	return ctx.JSON(http.StatusOK, map[string]interface{}{
 		"userId": "userId",
-		"token":  "token",
+		"token":  token,
 	})
 }
 

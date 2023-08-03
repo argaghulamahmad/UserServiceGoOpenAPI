@@ -8,6 +8,6 @@ import "context"
 
 type RepositoryInterface interface {
 	GetProfile(ctx context.Context, input GetProfileInput) (output GetProfileOutput, err error)
-	Updateprofile(ctx context.Context, input UpdateProfileInput) (output UpdateProfileOutput, err error)
+	UpdateProfile(ctx context.Context, input UpdateProfileInput) (output UpdateProfileOutput, err error)
 	InsertProfile(ctx context.Context, input InsertProfileInput) (output InsertProfileOutput, err error)
 }
