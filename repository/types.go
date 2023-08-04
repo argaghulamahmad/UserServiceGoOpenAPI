@@ -27,15 +27,3 @@ type InsertUserInput struct {
 type InsertUserOutput struct {
 	ID int
 }
-
-type IsPhonePasswordUserExistInput struct {
-	Phone    string
-	Password string
-}
-
-type IsPhonePasswordUserExistOutput struct {
-	Id       int
-	FullName string
-	Phone    string
-	IsExist  bool `json:"isExist"`
-}

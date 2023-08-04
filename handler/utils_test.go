@@ -49,6 +49,7 @@ func TestValidatePassword(t *testing.T) {
 		expectedRes bool
 	}{
 		{"Abcdef123!", true},
+		{"1!", false},
 		{"abcdef123!", false},
 		{"ABCDEF123!", false},
 		{"Abcdefghi", false},
