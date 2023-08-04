@@ -1,13 +1,11 @@
 // This file contains types that are used in the repository layer.
 package repository
 
-type GetUserInput struct {
-	Phone string
-}
-
 type GetUserOutput struct {
-	FullName string `json:"fullName"`
+	ID       int64  `json:"id"`
+	FullName string `json:"fullname"`
 	Phone    string `json:"phone"`
+	Password string `json:"password"`
 }
 
 type UpdateUserInput struct {
@@ -27,8 +25,7 @@ type InsertUserInput struct {
 }
 
 type InsertUserOutput struct {
-	FullName string `json:"fullName"`
-	Phone    string `json:"phone"`
+	ID int
 }
 
 type IsPhonePasswordUserExistInput struct {

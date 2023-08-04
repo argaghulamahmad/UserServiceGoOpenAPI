@@ -2,16 +2,14 @@ package handler
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"github.com/SawitProRecruitment/UserService/repository"
-	"net/http"
-	"strings"
-	"time"
-
+	"database/sql"
 	"github.com/SawitProRecruitment/UserService/generated"
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/SawitProRecruitment/UserService/repository"
 	"github.com/labstack/echo/v4"
+	"golang.org/x/crypto/bcrypt"
+	"net/http"
+	"regexp"
+	"strings"
 )
 
 var JWTSecretKey = []byte("argaghulamahmad-secretkey")
@@ -26,13 +24,16 @@ func (s *Server) LoginUser(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Phone number and password are required")
 	}
 
-	output, err := s.Repository.IsPhonePasswordUserExist(context.Background(), repository.IsPhonePasswordUserExistInput{
-		Phone:    params.Phone,
-		Password: params.Password,
-	})
-
+	user, err := s.Repository.GetUserByPhone(context.Background(), params.Phone)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return echo.NewHTTPError(http.StatusUnauthorized, "Invalid phone number or password")
+		}
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to check user")
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(params.Password)); err != nil {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid phone number or password")
 	}
 
 	token, err := generateJWTToken(params.Phone)
@@ -41,45 +42,9 @@ func (s *Server) LoginUser(ctx echo.Context) error {
 	}
 
 	return ctx.JSON(http.StatusOK, map[string]interface{}{
-		"userId": output.Id,
+		"userId": user.ID,
 		"token":  token,
 	})
-}
-
-func generateJWTToken(phoneNumber string) (string, error) {
-	token := jwt.New(jwt.SigningMethodHS256)
-	claims := token.Claims.(jwt.MapClaims)
-	claims["sub"] = phoneNumber
-	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
-
-	tokenString, err := token.SignedString(JWTSecretKey)
-	if err != nil {
-		return "", err
-	}
-
-	return tokenString, nil
-}
-
-func getPhoneNumberFromJWTToken(tokenString string) (string, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-		}
-		return JWTSecretKey, nil
-	})
-
-	if err != nil {
-		return "", err
-	}
-
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		if phoneNumber, ok := claims["sub"].(string); ok {
-			return phoneNumber, nil
-		}
-		return "", errors.New("Phone number not found in token claims")
-	}
-
-	return "", errors.New("Invalid token")
 }
 
 func (s *Server) GetUser(ctx echo.Context) error {
@@ -87,54 +52,103 @@ func (s *Server) GetUser(ctx echo.Context) error {
 	authorizationValue = strings.Replace(authorizationValue, "Bearer ", "", 1)
 
 	phoneNumber, err := getPhoneNumberFromJWTToken(authorizationValue)
-
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid authorization token")
+		return echo.NewHTTPError(http.StatusForbidden, "Invalid authorization token")
 	}
 
-	output, err := s.Repository.GetUser(context.Background(), repository.GetUserInput{
-		Phone: phoneNumber,
-	})
-
+	user, err := s.Repository.GetUserByPhone(context.Background(), phoneNumber)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to get user")
 	}
 
 	return ctx.JSON(http.StatusOK, generated.ProfileResponse{
-		FullName: output.FullName,
-		Phone:    phoneNumber,
+		FullName: user.FullName,
+		Phone:    user.Phone,
 	})
 }
 
 func (s *Server) UpdateUser(ctx echo.Context) error {
-	var params = generated.UpdateUserRequest{}
+	authorizationValue := ctx.Request().Header.Get("Authorization")
+	authorizationValue = strings.Replace(authorizationValue, "Bearer ", "", 1)
+
+	phoneNumber, err := getPhoneNumberFromJWTToken(authorizationValue)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusForbidden, "Invalid authorization token")
+	}
+
+	var params generated.UpdateUserRequest
 	if err := ctx.Bind(&params); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request data")
 	}
 
-	output, err := s.Repository.UpdateUser(context.Background(), repository.UpdateUserInput{
+	updatedFields := make(map[string]interface{})
+	if params.FullName != nil {
+		updatedFields["FullName"] = *params.FullName
+	}
+	if params.Phone != nil {
+		updatedFields["Phone"] = *params.Phone
+	}
+
+	updateInput := repository.UpdateUserInput{
 		FullName: *params.FullName,
-		Phone:    *params.Phone,
-	})
+		Phone:    phoneNumber,
+	}
+
+	user, err := s.Repository.UpdateUser(context.Background(), updateInput)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to update user")
 	}
 
 	return ctx.JSON(http.StatusOK, generated.ProfileResponse{
-		FullName: output.FullName,
-		Phone:    output.Phone,
+		FullName: user.FullName,
+		Phone:    user.Phone,
 	})
 }
 
 func (s *Server) RegisterUser(ctx echo.Context) error {
-	var params = generated.RegisterRequest{
-		FullName: "",
-		Phone:    "",
-		Password: "",
-	}
+	var params = generated.RegisterRequest{}
 	if err := ctx.Bind(&params); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request data")
 	}
 
-	return ctx.JSON(http.StatusCreated, nil)
+	var validationErrors []string
+
+	phonePattern := `^\+62\d{10,13}$`
+	matched, _ := regexp.MatchString(phonePattern, params.Phone)
+	if !matched {
+		validationErrors = append(validationErrors, "Invalid phone number format")
+	}
+
+	if len(params.FullName) < 3 || len(params.FullName) > 60 {
+		validationErrors = append(validationErrors, "Full name must be between 3 and 60 characters")
+	}
+
+	passPattern := `^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{6,64}$`
+	matched, _ = regexp.MatchString(passPattern, params.Password)
+	if !matched {
+		validationErrors = append(validationErrors, "Password must be between 6 and 64 characters and contain at least 1 uppercase letter, 1 number, and 1 special character")
+	}
+
+	if len(validationErrors) > 0 {
+		return echo.NewHTTPError(http.StatusBadRequest, validationErrors)
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(params.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to hash password")
+	}
+
+	user, err := s.Repository.InsertUser(context.Background(), repository.InsertUserInput{
+		FullName: params.FullName,
+		Phone:    params.Phone,
+		Password: string(hashedPassword),
+	})
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to register user")
+	}
+
+	return ctx.JSON(http.StatusCreated, map[string]interface{}{
+		"userId": user.ID,
+	})
 }

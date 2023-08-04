@@ -3,13 +3,13 @@ module github.com/SawitProRecruitment/UserService
 go 1.19
 
 require (
-	github.com/DATA-DOG/go-sqlmock v1.5.0
 	github.com/getkin/kin-openapi v0.118.0
 	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/golang/mock v1.6.0
 	github.com/labstack/echo/v4 v4.11.1
 	github.com/lib/pq v1.10.9
 	github.com/stretchr/testify v1.8.4
+	golang.org/x/crypto v0.11.0
 )
 
 require (
@@ -28,7 +28,6 @@ require (
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
-	golang.org/x/crypto v0.11.0 // indirect
 	golang.org/x/net v0.12.0 // indirect
 	golang.org/x/sys v0.10.0 // indirect
 	golang.org/x/text v0.11.0 // indirect
