@@ -1,160 +1,283 @@
 package handler
 
 import (
-	"bytes"
-	"context"
-	"encoding/json"
-	"github.com/SawitProRecruitment/UserService/generated"
+	"errors"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+
 	"github.com/SawitProRecruitment/UserService/repository"
 	"github.com/golang/mock/gomock"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
-	"net/http"
-	"net/http/httptest"
-	"testing"
 )
 
 func TestLoginUser(t *testing.T) {
-	e := echo.New()
-
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockDB := repository.NewMockRepositoryInterface(ctrl)
+	mockRepo := repository.NewMockRepositoryInterface(ctrl)
+	server := NewServer(NewServerOptions{
+		Repository: mockRepo,
+	})
 
-	testInput := repository.IsPhonePasswordUserExistInput{
-		Phone:    "1234567890",
-		Password: "password123",
-	}
-
-	expectedOutput := repository.IsPhonePasswordUserExistOutput{
-		FullName: "John Doe",
-		Phone:    testInput.Phone,
-	}
-
-	mockDB.EXPECT().IsPhonePasswordUserExist(context.Background(), testInput).Return(expectedOutput, nil)
-
-	loginData := generated.LoginRequest{
-		Phone:    "testuser",
-		Password: "testpassword",
-	}
-	body, _ := json.Marshal(loginData)
-
-	req := httptest.NewRequest(http.MethodPost, "/login", bytes.NewBuffer(body))
-	req.Header.Set("Content-Type", "application/json")
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(`{"Phone": "1234567890", "Password": "password123"}`))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 	ctx := e.NewContext(req, rec)
 
-	server := &Server{}
+	mockUser := repository.GetUserOutput{
+		ID:       1,
+		FullName: "Test User",
+		Phone:    "1234567890",
+		Password: "$2a$10$abcdefgh...",
+	}
+
+	mockRepo.EXPECT().GetUserByPhone(gomock.Any(), "1234567890").Return(mockUser, nil)
 
 	err := server.LoginUser(ctx)
-	if assert.NoError(t, err) {
-		assert.Equal(t, http.StatusOK, rec.Code)
-
-		var response map[string]interface{}
-		err := json.Unmarshal(rec.Body.Bytes(), &response)
-		assert.NoError(t, err)
-
-		assert.Contains(t, response, "userId")
-		assert.Contains(t, response, "token")
-	}
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, rec.Code)
 }
 
 func TestGetUser(t *testing.T) {
-	e := echo.New()
-
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockDB := repository.NewMockRepositoryInterface(ctrl)
 
-	testPhone := "1234567890"
-	expectedOutput := repository.GetUserOutput{
-		FullName: "John Doe",
-		Phone:    testPhone,
-	}
+	mockRepo := repository.NewMockRepositoryInterface(ctrl)
+	server := NewServer(NewServerOptions{
+		Repository: mockRepo,
+	})
 
-	mockDB.EXPECT().GetUser(context.Background(), repository.GetUserInput{Phone: testPhone}).Return(expectedOutput, nil)
-
-	req := httptest.NewRequest(http.MethodGet, "/profile", nil)
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodGet, "/user", nil)
+	req.Header.Set(echo.HeaderAuthorization, "Bearer test_token")
 	rec := httptest.NewRecorder()
 	ctx := e.NewContext(req, rec)
 
-	ctx.Set("user_id", 123)
+	mockUser := repository.GetUserOutput{
+		ID:       1,
+		FullName: "Test User",
+		Phone:    "1234567890",
+		Password: "$2a$10$abcdefgh...",
+	}
 
-	server := &Server{}
+	mockRepo.EXPECT().GetUserByPhone(gomock.Any(), "1234567890").Return(mockUser, nil)
 
 	err := server.GetUser(ctx)
-	if assert.NoError(t, err) {
-		assert.Equal(t, http.StatusOK, rec.Code)
-	}
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, rec.Code)
+
+	expectedResponse := `{"FullName":"Test User","Phone":"1234567890"}` + "\n"
+	assert.Equal(t, expectedResponse, rec.Body.String())
 }
 
 func TestUpdateUser(t *testing.T) {
-	e := echo.New()
-
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockDB := repository.NewMockRepositoryInterface(ctrl)
+	mockRepo := repository.NewMockRepositoryInterface(ctrl)
+	server := NewServer(NewServerOptions{
+		Repository: mockRepo,
+	})
 
-	testInput := repository.UpdateUserInput{
-		FullName: "Updated Name",
-		Phone:    "1234567890",
-	}
-
-	mockDB.EXPECT().UpdateUser(context.Background(), testInput).Return(repository.UpdateUserOutput{}, nil)
-
-	updateData := generated.UpdateUserRequest{
-		FullName: nil,
-		Phone:    nil,
-	}
-	body, _ := json.Marshal(updateData)
-
-	req := httptest.NewRequest(http.MethodPut, "/profile", bytes.NewBuffer(body))
-	req.Header.Set("Content-Type", "application/json")
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPut, "/user", strings.NewReader(`{"FullName": "Updated User", "Phone": "1234567890"}`))
+	req.Header.Set(echo.HeaderAuthorization, "Bearer test_token")
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 	ctx := e.NewContext(req, rec)
 
-	server := &Server{}
+	mockRepo.EXPECT().UpdateUser(gomock.Any(), gomock.Any()).Return(repository.UpdateUserOutput{
+		FullName: "Updated User",
+		Phone:    "1234567890",
+	}, nil)
 
 	err := server.UpdateUser(ctx)
-	if assert.NoError(t, err) {
-		assert.Equal(t, http.StatusOK, rec.Code)
-	}
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, rec.Code)
+
+	expectedResponse := `{"FullName":"Updated User","Phone":"1234567890"}` + "\n"
+	assert.Equal(t, expectedResponse, rec.Body.String())
 }
 
 func TestRegisterUser(t *testing.T) {
-	e := echo.New()
-
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockDB := repository.NewMockRepositoryInterface(ctrl)
+	mockRepo := repository.NewMockRepositoryInterface(ctrl)
+	server := NewServer(NewServerOptions{
+		Repository: mockRepo,
+	})
 
-	testInput := repository.InsertUserInput{
-		FullName: "Jane Smith",
-		Phone:    "9876543210",
-		Password: "password123",
-	}
-
-	mockDB.EXPECT().InsertUser(context.Background(), testInput).Return(repository.InsertUserOutput{}, nil)
-
-	registerData := generated.RegisterRequest{
-		FullName: "John Doe",
-		Phone:    "testuser",
-		Password: "testpassword",
-	}
-	body, _ := json.Marshal(registerData)
-
-	req := httptest.NewRequest(http.MethodPost, "/register", bytes.NewBuffer(body))
-	req.Header.Set("Content-Type", "application/json")
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPost, "/register", strings.NewReader(`{"FullName": "Test User", "Phone": "1234567890", "Password": "password123"}`))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 	ctx := e.NewContext(req, rec)
 
-	server := &Server{}
+	mockRepo.EXPECT().InsertUser(gomock.Any(), gomock.Any()).Return(repository.InsertUserOutput{
+		ID: 1,
+	}, nil)
 
 	err := server.RegisterUser(ctx)
-	if assert.NoError(t, err) {
-		assert.Equal(t, http.StatusCreated, rec.Code)
-	}
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusCreated, rec.Code)
+
+	expectedResponse := `{"userId":1}` + "\n"
+	assert.Equal(t, expectedResponse, rec.Body.String())
+}
+
+func TestInvalidLoginUser(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := repository.NewMockRepositoryInterface(ctrl)
+	server := NewServer(NewServerOptions{
+		Repository: mockRepo,
+	})
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(`{"Phone": "1234567890", "Password": "password123"}`))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	ctx := e.NewContext(req, rec)
+
+	mockRepo.EXPECT().GetUserByPhone(gomock.Any(), "1234567890").Return(repository.GetUserOutput{}, errors.New("user not found"))
+
+	err := server.LoginUser(ctx)
+	assert.Error(t, err)
+	assert.Equal(t, http.StatusUnauthorized, rec.Code)
+}
+
+func TestInvalidUpdateUser(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := repository.NewMockRepositoryInterface(ctrl)
+	server := NewServer(NewServerOptions{
+		Repository: mockRepo,
+	})
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPut, "/user", strings.NewReader(`{"FullName": "Updated User", "Phone": "1234567890"}`))
+	req.Header.Set(echo.HeaderAuthorization, "Bearer test_token")
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	ctx := e.NewContext(req, rec)
+
+	mockRepo.EXPECT().UpdateUser(gomock.Any(), gomock.Any()).Return(repository.UpdateUserOutput{}, errors.New("user update failed"))
+
+	err := server.UpdateUser(ctx)
+	assert.Error(t, err)
+	assert.Equal(t, http.StatusInternalServerError, rec.Code)
+}
+
+func TestInvalidRegisterUser(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := repository.NewMockRepositoryInterface(ctrl)
+	server := NewServer(NewServerOptions{
+		Repository: mockRepo,
+	})
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPost, "/register", strings.NewReader(`{"FullName": "Test User", "Phone": "1234567890", "Password": "password123"}`))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	ctx := e.NewContext(req, rec)
+
+	mockRepo.EXPECT().InsertUser(gomock.Any(), gomock.Any()).Return(repository.InsertUserOutput{}, errors.New("user registration failed"))
+
+	err := server.RegisterUser(ctx)
+	assert.Error(t, err)
+	assert.Equal(t, http.StatusInternalServerError, rec.Code)
+}
+
+func TestInvalidGetUser(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := repository.NewMockRepositoryInterface(ctrl)
+	server := NewServer(NewServerOptions{
+		Repository: mockRepo,
+	})
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodGet, "/user", nil)
+	req.Header.Set(echo.HeaderAuthorization, "Bearer test_token")
+	rec := httptest.NewRecorder()
+	ctx := e.NewContext(req, rec)
+
+	mockRepo.EXPECT().GetUserByPhone(gomock.Any(), "1234567890").Return(repository.GetUserOutput{}, errors.New("user not found"))
+
+	err := server.GetUser(ctx)
+	assert.Error(t, err)
+	assert.Equal(t, http.StatusInternalServerError, rec.Code)
+}
+
+func TestInvalidPhoneNumberFormatRegisterUser(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := repository.NewMockRepositoryInterface(ctrl)
+	server := NewServer(NewServerOptions{
+		Repository: mockRepo,
+	})
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPost, "/register", strings.NewReader(`{"FullName": "Test User", "Phone": "1234567", "Password": "password123"}`))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	ctx := e.NewContext(req, rec)
+
+	err := server.RegisterUser(ctx)
+	assert.Error(t, err)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+	assert.Contains(t, rec.Body.String(), "Invalid phone number format")
+}
+
+func TestInvalidFullNameLengthRegisterUser(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := repository.NewMockRepositoryInterface(ctrl)
+	server := NewServer(NewServerOptions{
+		Repository: mockRepo,
+	})
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPost, "/register", strings.NewReader(`{"FullName": "A", "Phone": "1234567890", "Password": "password123"}`))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	ctx := e.NewContext(req, rec)
+
+	err := server.RegisterUser(ctx)
+	assert.Error(t, err)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+	assert.Contains(t, rec.Body.String(), "Full name must be between 3 and 60 characters")
+}
+
+func TestInvalidPasswordFormatRegisterUser(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := repository.NewMockRepositoryInterface(ctrl)
+	server := NewServer(NewServerOptions{
+		Repository: mockRepo,
+	})
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPost, "/register", strings.NewReader(`{"FullName": "Test User", "Phone": "1234567890", "Password": "password"}`))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	ctx := e.NewContext(req, rec)
+
+	err := server.RegisterUser(ctx)
+	assert.Error(t, err)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+	assert.Contains(t, rec.Body.String(), "Password must be between 6 and 64 characters and contain at least 1 uppercase letter, 1 number, and 1 special character")
 }
