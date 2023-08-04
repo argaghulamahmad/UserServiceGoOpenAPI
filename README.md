@@ -1,4 +1,4 @@
-# Backend Engineering Interview Assignment (Golang)
+# User Service Go Open API
 
 ## Requirements
 
