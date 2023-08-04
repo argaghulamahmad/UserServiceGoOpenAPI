@@ -34,19 +34,19 @@ func (m *MockRepositoryInterface) EXPECT() *MockRepositoryInterfaceMockRecorder 
 	return m.recorder
 }
 
-// GetUser mocks base method.
-func (m *MockRepositoryInterface) GetUser(ctx context.Context, input GetUserInput) (GetUserOutput, error) {
+// GetUserByPhone mocks base method.
+func (m *MockRepositoryInterface) GetUserByPhone(ctx context.Context, phone string) (GetUserOutput, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUser", ctx, input)
+	ret := m.ctrl.Call(m, "GetUserByPhone", ctx, phone)
 	ret0, _ := ret[0].(GetUserOutput)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetUser indicates an expected call of GetUser.
-func (mr *MockRepositoryInterfaceMockRecorder) GetUser(ctx, input interface{}) *gomock.Call {
+// GetUserByPhone indicates an expected call of GetUserByPhone.
+func (mr *MockRepositoryInterfaceMockRecorder) GetUserByPhone(ctx, phone interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUser", reflect.TypeOf((*MockRepositoryInterface)(nil).GetUser), ctx, input)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByPhone", reflect.TypeOf((*MockRepositoryInterface)(nil).GetUserByPhone), ctx, phone)
 }
 
 // InsertUser mocks base method.
@@ -62,21 +62,6 @@ func (m *MockRepositoryInterface) InsertUser(ctx context.Context, input InsertUs
 func (mr *MockRepositoryInterfaceMockRecorder) InsertUser(ctx, input interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertUser", reflect.TypeOf((*MockRepositoryInterface)(nil).InsertUser), ctx, input)
-}
-
-// IsPhonePasswordUserExist mocks base method.
-func (m *MockRepositoryInterface) IsPhonePasswordUserExist(ctx context.Context, input IsPhonePasswordUserExistInput) (IsPhonePasswordUserExistOutput, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsPhonePasswordUserExist", ctx, input)
-	ret0, _ := ret[0].(IsPhonePasswordUserExistOutput)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// IsPhonePasswordUserExist indicates an expected call of IsPhonePasswordUserExist.
-func (mr *MockRepositoryInterfaceMockRecorder) IsPhonePasswordUserExist(ctx, input interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsPhonePasswordUserExist", reflect.TypeOf((*MockRepositoryInterface)(nil).IsPhonePasswordUserExist), ctx, input)
 }
 
 // UpdateUser mocks base method.
