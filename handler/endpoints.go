@@ -8,11 +8,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
-	"regexp"
 	"strings"
 )
-
-var JWTSecretKey = []byte("argaghulamahmad-secretkey")
 
 func (s *Server) LoginUser(ctx echo.Context) error {
 	var params generated.LoginRequest
@@ -113,19 +110,15 @@ func (s *Server) RegisterUser(ctx echo.Context) error {
 
 	var validationErrors []string
 
-	phonePattern := `^\+62\d{10,13}$`
-	matched, _ := regexp.MatchString(phonePattern, params.Phone)
-	if !matched {
+	if !validatePhoneNumber(params.Phone) {
 		validationErrors = append(validationErrors, "Invalid phone number format")
 	}
 
-	if len(params.FullName) < 3 || len(params.FullName) > 60 {
+	if !validateFullName(params.FullName) {
 		validationErrors = append(validationErrors, "Full name must be between 3 and 60 characters")
 	}
 
-	passPattern := `^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{6,64}$`
-	matched, _ = regexp.MatchString(passPattern, params.Password)
-	if !matched {
+	if !validatePassword(params.Password) {
 		validationErrors = append(validationErrors, "Password must be between 6 and 64 characters and contain at least 1 uppercase letter, 1 number, and 1 special character")
 	}
 

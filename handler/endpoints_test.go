@@ -2,6 +2,8 @@ package handler
 
 import (
 	"errors"
+	"fmt"
+	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -23,21 +25,23 @@ func TestLoginUser(t *testing.T) {
 	})
 
 	e := echo.New()
-	req := httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(`{"Phone": "1234567890", "Password": "password123"}`))
+	req := httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(`{"Phone": "1234567890", "Password": "Password123@"}`))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 	ctx := e.NewContext(req, rec)
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte("Password123@"), bcrypt.DefaultCost)
 
 	mockUser := repository.GetUserOutput{
 		ID:       1,
 		FullName: "Test User",
 		Phone:    "1234567890",
-		Password: "$2a$10$abcdefgh...",
+		Password: string(hashedPassword),
 	}
 
 	mockRepo.EXPECT().GetUserByPhone(gomock.Any(), "1234567890").Return(mockUser, nil)
 
-	err := server.LoginUser(ctx)
+	err = server.LoginUser(ctx)
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, rec.Code)
 }
@@ -51,9 +55,11 @@ func TestGetUser(t *testing.T) {
 		Repository: mockRepo,
 	})
 
+	jwtToken, _ := generateJWTToken("1234567890")
+
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodGet, "/user", nil)
-	req.Header.Set(echo.HeaderAuthorization, "Bearer test_token")
+	req.Header.Set(echo.HeaderAuthorization, fmt.Sprintf("Bearer %s", jwtToken))
 	rec := httptest.NewRecorder()
 	ctx := e.NewContext(req, rec)
 
@@ -70,7 +76,7 @@ func TestGetUser(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, rec.Code)
 
-	expectedResponse := `{"FullName":"Test User","Phone":"1234567890"}` + "\n"
+	expectedResponse := `{"fullName":"Test User","phone":"1234567890"}` + "\n"
 	assert.Equal(t, expectedResponse, rec.Body.String())
 }
 
@@ -83,9 +89,11 @@ func TestUpdateUser(t *testing.T) {
 		Repository: mockRepo,
 	})
 
+	jwtToken, _ := generateJWTToken("1234567890")
+
 	e := echo.New()
-	req := httptest.NewRequest(http.MethodPut, "/user", strings.NewReader(`{"FullName": "Updated User", "Phone": "1234567890"}`))
-	req.Header.Set(echo.HeaderAuthorization, "Bearer test_token")
+	req := httptest.NewRequest(http.MethodPut, "/user", strings.NewReader(`{"FullName": "Updated User", "Phone": "+6212345678901"}`))
+	req.Header.Set(echo.HeaderAuthorization, fmt.Sprintf("Bearer %s", jwtToken))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 	ctx := e.NewContext(req, rec)
@@ -99,7 +107,7 @@ func TestUpdateUser(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, rec.Code)
 
-	expectedResponse := `{"FullName":"Updated User","Phone":"1234567890"}` + "\n"
+	expectedResponse := `{"fullName":"Updated User","phone":"1234567890"}` + "\n"
 	assert.Equal(t, expectedResponse, rec.Body.String())
 }
 
@@ -113,7 +121,7 @@ func TestRegisterUser(t *testing.T) {
 	})
 
 	e := echo.New()
-	req := httptest.NewRequest(http.MethodPost, "/register", strings.NewReader(`{"FullName": "Test User", "Phone": "1234567890", "Password": "password123"}`))
+	req := httptest.NewRequest(http.MethodPost, "/register", strings.NewReader(`{"fullName": "Test User", "phone": "+6212345678901", "password": "Passw0rd!"}`))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 	ctx := e.NewContext(req, rec)
@@ -140,7 +148,7 @@ func TestInvalidLoginUser(t *testing.T) {
 	})
 
 	e := echo.New()
-	req := httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(`{"Phone": "1234567890", "Password": "password123"}`))
+	req := httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(`{"Phone": "1234567890", "Password": "Password123@"}`))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 	ctx := e.NewContext(req, rec)
@@ -185,7 +193,7 @@ func TestInvalidRegisterUser(t *testing.T) {
 	})
 
 	e := echo.New()
-	req := httptest.NewRequest(http.MethodPost, "/register", strings.NewReader(`{"FullName": "Test User", "Phone": "1234567890", "Password": "password123"}`))
+	req := httptest.NewRequest(http.MethodPost, "/register", strings.NewReader(`{"FullName": "Test User", "Phone": "1234567890", "Password": "Password123@"}`))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 	ctx := e.NewContext(req, rec)
@@ -229,7 +237,7 @@ func TestInvalidPhoneNumberFormatRegisterUser(t *testing.T) {
 	})
 
 	e := echo.New()
-	req := httptest.NewRequest(http.MethodPost, "/register", strings.NewReader(`{"FullName": "Test User", "Phone": "1234567", "Password": "password123"}`))
+	req := httptest.NewRequest(http.MethodPost, "/register", strings.NewReader(`{"FullName": "Test User", "Phone": "1234567", "Password": "Password123@"}`))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 	ctx := e.NewContext(req, rec)
@@ -250,7 +258,7 @@ func TestInvalidFullNameLengthRegisterUser(t *testing.T) {
 	})
 
 	e := echo.New()
-	req := httptest.NewRequest(http.MethodPost, "/register", strings.NewReader(`{"FullName": "A", "Phone": "1234567890", "Password": "password123"}`))
+	req := httptest.NewRequest(http.MethodPost, "/register", strings.NewReader(`{"FullName": "A", "Phone": "1234567890", "Password": "Password123@"}`))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 	ctx := e.NewContext(req, rec)
