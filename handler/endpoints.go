@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-	"database/sql"
 	"github.com/SawitProRecruitment/UserService/generated"
 	"github.com/SawitProRecruitment/UserService/repository"
 	"github.com/labstack/echo/v4"
@@ -23,10 +22,7 @@ func (s *Server) LoginUser(ctx echo.Context) error {
 
 	user, err := s.Repository.GetUserByPhone(context.Background(), params.Phone)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return echo.NewHTTPError(http.StatusUnauthorized, "Invalid phone number or password")
-		}
-		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to check user")
+		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid phone number or password")
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(params.Password)); err != nil {
