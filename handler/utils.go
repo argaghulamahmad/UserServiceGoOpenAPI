@@ -4,12 +4,21 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
+	"os"
 	"regexp"
 	"strings"
 	"time"
 )
 
-var JWTSecretKey = []byte("argaghulamahmad-secretkey")
+var JWTSecretKey = getSecretKeyFromEnv()
+
+func getSecretKeyFromEnv() []byte {
+	secretKey := os.Getenv("JWT_SECRET_KEY")
+	if secretKey == "" {
+		secretKey = "default-secretkey"
+	}
+	return []byte(secretKey)
+}
 
 func generateJWTToken(phoneNumber string) (string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
