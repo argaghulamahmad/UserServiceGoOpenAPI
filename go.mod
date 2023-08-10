@@ -1,4 +1,4 @@
-module github.com/SawitProRecruitment/UserService
+module github.com/SawitProRecruitment/UserServiceGoOpenAPI
 
 go 1.19
 

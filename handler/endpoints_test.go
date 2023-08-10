@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/SawitProRecruitment/UserService/repository"
+	"github.com/SawitProRecruitment/UserServiceGoOpenAPI/repository"
 	"github.com/golang/mock/gomock"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"

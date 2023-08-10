@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/SawitProRecruitment/UserService/repository"
+	"github.com/SawitProRecruitment/UserServiceGoOpenAPI/repository"
 )
 
 type Server struct {

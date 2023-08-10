@@ -2,8 +2,8 @@ package handler
 
 import (
 	"context"
-	"github.com/SawitProRecruitment/UserService/generated"
-	"github.com/SawitProRecruitment/UserService/repository"
+	"github.com/SawitProRecruitment/UserServiceGoOpenAPI/generated"
+	"github.com/SawitProRecruitment/UserServiceGoOpenAPI/repository"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
